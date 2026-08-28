@@ -1,0 +1,223 @@
+/* ============================================================
+   PATHWISE AI — SIGNATURE LUXURY DESIGN TOKENS
+   "Forge Your Skills. Build Your Future."
+
+   Palette Direction: Obsidian · Graphite · Warm Ivory
+                      Champagne · Burnt Copper · Deep Teal
+   Philosophy:        Quiet Luxury · Precision Engineering
+                      Intelligence · Restraint · Ambition
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap');
+
+:root {
+
+  /* ── BRAND IDENTITY ── */
+  /* Primary Interactive: Deep Teal — intelligent, calm, purposeful */
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-dark: #115e59;
+  --color-primary-light: rgba(13, 148, 136, 0.1);
+  --color-primary-glow: rgba(13, 148, 136, 0.2);
+
+  /* Second Accent: Burnt Copper — ambition, energy, craftsmanship */
+  --color-accent: #c2692a;
+  --color-accent-hover: #a85523;
+  --color-accent-light: rgba(194, 105, 42, 0.1);
+  --color-accent-glow: rgba(194, 105, 42, 0.2);
+
+  /* Premium Highlight: Champagne — achievement, precision, luxury */
+  --color-champagne: #d4af7a;
+  --color-champagne-hover: #c49a60;
+  --color-champagne-light: rgba(212, 175, 122, 0.12);
+  --color-champagne-glow: rgba(212, 175, 122, 0.22);
+  --color-champagne-text: #b8965c;
+
+  /* Aliases for backward compat */
+  --color-gold: #d4af7a;
+  --color-gold-light: rgba(212, 175, 122, 0.12);
+  --color-gold-glow: rgba(212, 175, 122, 0.22);
+  --color-gold-text: #b8965c;
+
+  /* ── SEMANTIC TONES ── */
+  --color-success: #16a34a;
+  --color-success-light: rgba(22, 163, 74, 0.1);
+  --color-success-glow: rgba(22, 163, 74, 0.2);
+
+  --color-warning: #d97706;
+  --color-warning-light: rgba(217, 119, 6, 0.1);
+
+  --color-error: #dc2626;
+  --color-error-light: rgba(220, 38, 38, 0.1);
+
+  --color-info: #0d9488;
+  --color-info-light: rgba(13, 148, 136, 0.1);
+
+  /* ── PRIORITY TOKENS ── */
+  --color-high: #dc2626;
+  --color-medium: #d97706;
+  --color-low: #16a34a;
+
+  /* ── DIFFICULTY TOKENS ── */
+  --color-difficult: #dc2626;
+  --color-moderate: #d97706;
+  --color-easy: #16a34a;
+
+  /* ── LIGHT MODE SURFACES (Warm Ivory / Cream) ── */
+  --color-bg: #faf9f7;
+  --color-bg-subtle: #f3f1ed;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f7f5f2;
+  --color-surface-hover: #f0ede8;
+  --color-surface-glass: rgba(255, 255, 255, 0.88);
+
+  --color-border: #e3ddd6;
+  --color-border-light: #ede9e3;
+  --color-border-hover: #cec5ba;
+  --color-border-glow: rgba(13, 148, 136, 0.2);
+
+  --color-text-primary: #1a1816;
+  --color-text-secondary: #5a524a;
+  --color-text-muted: #8a7e74;
+  --color-text-inverse: #faf9f7;
+
+  /* ── SIDEBAR (Always Dark — Obsidian) ── */
+  --color-sidebar-bg: #0c0c0d;
+  --color-sidebar-surface: #111113;
+  --color-sidebar-border: rgba(255, 255, 255, 0.06);
+  --color-sidebar-text: #8a8078;
+  --color-sidebar-text-active: #f0ede8;
+  --color-sidebar-active: #0d9488;
+  --color-sidebar-active-bg: rgba(13, 148, 136, 0.12);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.04);
+  --color-sidebar-champagne: #d4af7a;
+
+  --color-champagne-text: #a85523;
+  --color-gold-text: #b45309;
+  --gradient-primary: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  --gradient-accent: linear-gradient(135deg, #c2692a 0%, #a85523 100%);
+  --gradient-champagne: linear-gradient(135deg, #d4af7a 0%, #c49a60 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f7f5f2 100%);
+  --gradient-hero: linear-gradient(135deg, #ffffff 0%, #f7f5f2 100%);
+  --gradient-dark-hero: linear-gradient(135deg, #0a0a0b 0%, #1c1c1f 100%);
+  --gradient-card: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(247,245,242,0.95) 100%);
+  --gradient-primary-subtle: linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(15,118,110,0.08) 100%);
+
+  /* ── LIGHT MODE SHADOWS (Warm-toned) ── */
+  --shadow-xs: 0 1px 2px rgba(26, 24, 22, 0.04);
+  --shadow-sm: 0 2px 4px rgba(26, 24, 22, 0.05), 0 1px 2px rgba(26, 24, 22, 0.03);
+  --shadow-md: 0 6px 16px -2px rgba(26, 24, 22, 0.08), 0 2px 6px -1px rgba(26, 24, 22, 0.04);
+  --shadow-lg: 0 14px 28px -4px rgba(26, 24, 22, 0.1), 0 6px 12px -2px rgba(26, 24, 22, 0.05);
+  --shadow-xl: 0 24px 48px -8px rgba(26, 24, 22, 0.13), 0 12px 20px -4px rgba(26, 24, 22, 0.06);
+  --shadow-glow: 0 0 24px rgba(13, 148, 136, 0.2);
+  --shadow-gold-glow: 0 0 24px rgba(212, 175, 122, 0.22);
+  --shadow-copper-glow: 0 0 24px rgba(194, 105, 42, 0.2);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 0 rgba(0,0,0,0.04);
+
+  /* ── TYPOGRAPHY ── */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'DM Serif Display', Georgia, serif;
+
+  --font-size-2xs: 0.6875rem;   /* 11px */
+  --font-size-xs:  0.75rem;     /* 12px */
+  --font-size-sm:  0.875rem;    /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg:  1.125rem;    /* 18px */
+  --font-size-xl:  1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+  --font-size-5xl: 3rem;        /* 48px */
+  --font-size-6xl: 3.75rem;     /* 60px */
+
+  /* ── SPACING ── */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── RADII ── */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-2xl:  26px;
+  --radius-full: 9999px;
+
+  /* ── MOTION ── */
+  --transition-fast:   140ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base:   240ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow:   380ms cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:       cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo:     cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── DIMENSIONS ── */
+  --sidebar-width:  252px;
+  --header-height:  60px;
+}
+
+/* ============================================================
+   DARK MODE — OBSIDIAN · GRAPHITE · QUIET LUXURY
+   Primary: Obsidian #0a0a0b
+   Surface: Graphite #141416
+   Text: Warm Ivory #f0ede8
+   Accent: Deep Teal + Champagne + Burnt Copper
+   ============================================================ */
+[data-theme="dark"] {
+
+  /* ── DARK SURFACES (70% Obsidian / 20% Graphite) ── */
+  --color-bg:           #0a0a0b;
+  --color-bg-subtle:    #0f0f11;
+  --color-surface:      #141416;
+  --color-surface-alt:  #1c1c1f;
+  --color-surface-hover:#242428;
+  --color-surface-glass: rgba(20, 20, 22, 0.80);
+
+  --color-border:       #2a2a2e;
+  --color-border-light: #1f1f22;
+  --color-border-hover: #3d3d44;
+  --color-border-glow:  rgba(13, 148, 136, 0.28);
+
+  /* ── DARK TEXT (Warm Ivory → Stone → Ash) ── */
+  --color-text-primary:   #f0ede8;
+  --color-text-secondary: #a09a92;
+  --color-text-muted:     #665f58;
+  --color-text-inverse:   #0a0a0b;
+
+  /* ── DARK SIDEBAR ── */
+  --color-sidebar-bg:          #080809;
+  --color-sidebar-surface:     #0e0e10;
+  --color-sidebar-border:      #1a1a1d;
+  --color-sidebar-text:        #6b6560;
+  --color-sidebar-text-active: #f0ede8;
+  --color-sidebar-active:      #0d9488;
+  --color-sidebar-active-bg:   rgba(13, 148, 136, 0.13);
+  --color-sidebar-hover:       rgba(255, 255, 255, 0.035);
+  --color-sidebar-champagne:   #d4af7a;
+
+  /* ── DARK GRADIENTS ── */
+  --gradient-dark-hero: linear-gradient(135deg, #0a0a0b 0%, #1c1c1f 100%);
+  --gradient-hero: linear-gradient(135deg, #141416 0%, #1c1c1f 100%);
+  --gradient-card: linear-gradient(180deg, rgba(28, 28, 31, 0.7) 0%, rgba(20, 20, 22, 0.9) 100%);
+  --gradient-surface: linear-gradient(180deg, #1c1c1f 0%, #141416 100%);
+  --color-champagne-text: #d4af7a;
+  --color-gold-text: #d4af7a;
+
+  /* ── DARK SHADOWS (Deeper, warm-tinted) ── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px -2px rgba(0, 0, 0, 0.65), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 32px -4px rgba(0, 0, 0, 0.75), 0 6px 14px -2px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 28px 56px -8px rgba(0, 0, 0, 0.85), 0 14px 24px -4px rgba(0, 0, 0, 0.6);
+  --shadow-glow:        0 0 32px rgba(13, 148, 136, 0.25);
+  --shadow-gold-glow:   0 0 32px rgba(212, 175, 122, 0.22);
+  --shadow-copper-glow: 0 0 32px rgba(194, 105, 42, 0.22);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(0,0,0,0.2);
+}
