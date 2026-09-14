@@ -1,32 +1,74 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, CheckSquare, Timer, BarChart2, MessageSquare, BookOpen } from 'lucide-react';
+import { Home, BookOpen, Sparkles, Target, Menu } from 'lucide-react';
 
-const MOBILE_NAV = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/targets', icon: CheckSquare, label: 'Targets' },
-  { to: '/timer', icon: Timer, label: 'Timer' },
-  { to: '/analytics', icon: BarChart2, label: 'Analytics' },
-  { to: '/ai-assistant', icon: MessageSquare, label: 'AI' },
-  { to: '/academic', icon: BookOpen, label: 'Academic' },
-];
-
-export default function MobileNav() {
+export default function MobileNav({ onOpenMore }) {
   return (
-    <nav className="mobile-nav" role="navigation" aria-label="Mobile navigation">
-      <div className="mobile-nav-items">
-        {MOBILE_NAV.map(item => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}
-            aria-label={item.label}
-          >
-            <item.icon size={20} aria-hidden="true" />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
+    <nav className="mobile-nav" role="navigation" aria-label="Mobile primary navigation">
+      <div className="mobile-nav-bar">
+        
+        {/* 1. HOME */}
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) => `mobile-tab ${isActive ? 'active' : ''}`}
+          aria-label="Home Dashboard"
+        >
+          <div className="mobile-tab-icon-wrap">
+            <Home size={20} aria-hidden="true" />
+          </div>
+          <span className="mobile-tab-label">Home</span>
+        </NavLink>
+
+        {/* 2. LEARN */}
+        <NavLink
+          to="/learn"
+          className={({ isActive }) => `mobile-tab ${isActive ? 'active' : ''}`}
+          aria-label="Learning Hub"
+        >
+          <div className="mobile-tab-icon-wrap">
+            <BookOpen size={20} aria-hidden="true" />
+          </div>
+          <span className="mobile-tab-label">Learn</span>
+        </NavLink>
+
+        {/* 3. ROADMAP */}
+        <NavLink
+          to="/roadmap"
+          className={({ isActive }) => `mobile-tab ${isActive ? 'active' : ''}`}
+          aria-label="FutureForge Roadmap"
+        >
+          <div className="mobile-tab-icon-wrap">
+            <Sparkles size={20} aria-hidden="true" />
+          </div>
+          <span className="mobile-tab-label">Roadmap</span>
+        </NavLink>
+
+        {/* 4. CAREER */}
+        <NavLink
+          to="/goal-career"
+          className={({ isActive }) => `mobile-tab ${isActive ? 'active' : ''}`}
+          aria-label="Career Discover"
+        >
+          <div className="mobile-tab-icon-wrap">
+            <Target size={20} aria-hidden="true" />
+          </div>
+          <span className="mobile-tab-label">Career</span>
+        </NavLink>
+
+        {/* 5. MORE */}
+        <button
+          type="button"
+          className="mobile-tab mobile-tab-button"
+          onClick={onOpenMore}
+          aria-label="Open More Menu"
+        >
+          <div className="mobile-tab-icon-wrap">
+            <Menu size={20} aria-hidden="true" />
+          </div>
+          <span className="mobile-tab-label">More</span>
+        </button>
+
       </div>
     </nav>
   );

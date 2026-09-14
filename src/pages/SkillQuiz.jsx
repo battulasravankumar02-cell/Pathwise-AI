@@ -191,7 +191,7 @@ export default function SkillQuiz() {
 
       <div className="grid grid-3" style={{ gap: 'var(--space-6)', alignItems: 'start' }}>
         {/* Left 2 Cols: Main Quiz Interface */}
-        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', minWidth: 0, maxWidth: '100%' }}>
           {/* Controls & Configuration Bar */}
           <Card>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
@@ -205,7 +205,7 @@ export default function SkillQuiz() {
               </div>
 
               {/* Quiz Configuration Dropdowns */}
-              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
                 <select
                   className="form-select"
                   style={{ width: 'auto', padding: '4px 8px', fontSize: 'var(--font-size-xs)' }}
@@ -249,13 +249,14 @@ export default function SkillQuiz() {
                   No uploaded resources found in your Study Vault. Upload notes or PDFs in the Study Vault tab to take grounded quizzes!
                 </Alert>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
                   <label htmlFor="select-vault-resource" style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                     Select Resource:
                   </label>
                   <select
                     id="select-vault-resource"
                     className="form-select"
+                    style={{ minWidth: 0, flex: 1 }}
                     value={selectedResourceId}
                     onChange={e => setSelectedResourceId(e.target.value)}
                     disabled={submitted}
@@ -269,13 +270,14 @@ export default function SkillQuiz() {
                 </div>
               )
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-2)', flexWrap: 'wrap' }}>
                 <label htmlFor="select-learned-skill" style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                   Target Stage:
                 </label>
                 <select
                   id="select-learned-skill"
                   className="form-select"
+                  style={{ minWidth: 0, flex: 1 }}
                   value={selectedSkillStep}
                   onChange={e => setSelectedSkillStep(e.target.value)}
                   disabled={submitted}

@@ -138,7 +138,7 @@ export const dataService = {
     return getItem(userId, 'career_goal', null);
   },
 
-  async saveCareerGoal(userId, goal) {
+  async saveCareerGoal(userId, goal, options = { regenerateRoadmap: true }) {
     if (!userId) return { success: false };
     const cleanGoal = {
       ...goal,
@@ -147,8 +147,8 @@ export const dataService = {
     };
     setItem(userId, 'career_goal', cleanGoal);
 
-    // Automatically generate or update personalized FutureForge Roadmap & Targets
-    if (cleanGoal.hasGoal && cleanGoal.jobRole) {
+    // Automatically generate or update personalized FutureForge Roadmap & Targets if requested
+    if (options?.regenerateRoadmap !== false && cleanGoal.hasGoal && cleanGoal.jobRole) {
       const generatedRoadmap = generatePersonalizedRoadmap(cleanGoal.jobRole, cleanGoal.country || 'Germany');
       await this.saveRoadmap(userId, generatedRoadmap);
     }

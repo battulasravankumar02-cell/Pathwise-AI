@@ -27,7 +27,6 @@ const NAV_ITEMS = [
   { section: 'PLANNING & ACADEMICS', items: [
     { to: '/calendar', icon: Calendar, label: 'Unified Calendar' },
     { to: '/assignments', icon: ClipboardList, label: 'Assignments' },
-    { to: '/exams', icon: FileText, label: 'Exam Planner' },
     { to: '/academic', icon: BookOpen, label: 'Academic & Attendance' },
   ]},
   { section: 'INTELLIGENCE', items: [

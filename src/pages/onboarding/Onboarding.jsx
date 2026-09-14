@@ -47,7 +47,28 @@ export default function Onboarding() {
   });
 
   function update(field, value) {
-    setForm(f => ({ ...f, [field]: value }));
+    setForm(f => {
+      const next = { ...f, [field]: value };
+      const course = field === 'course' ? value : f.course;
+      const year = field === 'year' ? value : f.year;
+      if (course && year && (field === 'course' || field === 'year')) {
+        const currentCalendarYear = new Date().getFullYear();
+        let totalYears = 4;
+        if (course.includes('B.Tech') || course.includes('B.E.')) totalYears = 4;
+        else if (course.includes('B.Sc') || course.includes('BCA') || course.includes('B.Com')) totalYears = 3;
+        else if (course.includes('M.Tech') || course.includes('MCA') || course.includes('MBA')) totalYears = 2;
+
+        let currentYearNum = 1;
+        if (year.includes('2nd')) currentYearNum = 2;
+        else if (year.includes('3rd')) currentYearNum = 3;
+        else if (year.includes('4th')) currentYearNum = 4;
+        else if (year.includes('5th')) currentYearNum = 5;
+
+        const calculatedGradYear = currentCalendarYear + Math.max(0, totalYears - currentYearNum);
+        next.graduationYear = String(calculatedGradYear);
+      }
+      return next;
+    });
   }
 
   function canProceed() {

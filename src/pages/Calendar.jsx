@@ -168,7 +168,7 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 'var(--space-6)' }}>
+      <div className="calendar-layout-grid">
         {/* Calendar Grid Card */}
         <Card>
           {/* Month Header Navigation */}

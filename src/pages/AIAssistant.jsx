@@ -118,9 +118,9 @@ export default function AIAssistant() {
   return (
     <AppLayout pageTitle="AI Assistant">
       {user?.isDemo && <DemoBanner />}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 'var(--space-6)', height: 'calc(100vh - 180px)', minHeight: 500 }}>
+      <div className="ai-assistant-page-container">
         {/* Chat panel */}
-        <Card style={{ display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}>
+        <Card style={{ display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', height: '100%' }}>
           {/* Header with Mode Selector */}
           <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--color-surface)', flexWrap: 'wrap', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -180,6 +180,21 @@ export default function AIAssistant() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Quick Suggestion Pills for Mobile & Quick Access */}
+          <div className="ai-mobile-quick-chips">
+            {QUICK_QUESTIONS.slice(0, 5).map(q => (
+              <button
+                key={q}
+                type="button"
+                className="ai-chip-pill"
+                onClick={() => sendMessage(q)}
+                disabled={loading}
+              >
+                💡 {q}
+              </button>
+            ))}
+          </div>
+
           {/* Input */}
           <div style={{ padding: 'var(--space-4) var(--space-5)', borderTop: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)' }}>
             <input
@@ -206,8 +221,8 @@ export default function AIAssistant() {
           </div>
         </Card>
 
-        {/* Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        {/* Desktop Quick Questions Sidebar */}
+        <div className="ai-desktop-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           {/* Quick Questions */}
           <Card>
             <h3 style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -102,14 +102,14 @@ export default function FloatingChatbot() {
   if (!user) return null;
 
   return (
-    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 999 }}>
+    <div className="floating-chatbot-root">
       {/* Floating Launch Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           style={{
-            width: 60,
-            height: 60,
+            width: 54,
+            height: 54,
             borderRadius: '50%',
             background: 'linear-gradient(135deg, var(--color-primary), #0f766e)',
             color: 'white',
@@ -120,11 +120,12 @@ export default function FloatingChatbot() {
             justifyContent: 'center',
             cursor: 'pointer',
             transition: 'transform 200ms ease',
+            touchAction: 'manipulation',
           }}
           aria-label="Open PathWise AI Chatbot"
           id="floating-chatbot-btn"
         >
-          <MessageSquare size={26} />
+          <MessageSquare size={24} />
         </button>
       )}
 
@@ -133,9 +134,9 @@ export default function FloatingChatbot() {
         <div
           style={{
             width: 380,
-            maxWidth: 'calc(100vw - 32px)',
-            height: 540,
-            maxHeight: 'calc(100vh - 100px)',
+            maxWidth: 'calc(100vw - 20px)',
+            height: 520,
+            maxHeight: 'calc(100dvh - 100px)',
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-xl)',

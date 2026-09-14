@@ -161,6 +161,9 @@
   /* ── DIMENSIONS ── */
   --sidebar-width:  252px;
   --header-height:  60px;
+  --mobile-nav-height: 64px;
+  --touch-target-min: 44px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ============================================================

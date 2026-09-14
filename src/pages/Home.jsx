@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Timer, CheckSquare, Plus, MessageSquare, Flame, BookOpen,
   Calendar, TrendingUp, Sparkles, Award, ArrowRight, ShieldCheck,
-  Compass, Target, ChevronRight, Zap, CheckCircle2
+  Compass, Target, ChevronRight, Zap, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 import AppLayout from '../components/layout/AppLayout.jsx';
 import { Card, StatCard, ProgressBar, Badge, EmptyState } from '../components/ui/index.jsx';
@@ -20,7 +20,6 @@ export default function Home() {
 
   const [todayTargets, setTodayTargets] = useState([]);
   const [assignments, setAssignments] = useState([]);
-  const [exams, setExams] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [careerGoal, setCareerGoal] = useState(null);
   const [latestQuiz, setLatestQuiz] = useState(null);
@@ -35,10 +34,9 @@ export default function Home() {
   useEffect(() => {
     if (!user) return;
     async function load() {
-      const [targets, assigns, ex, anl, goal, quiz, att] = await Promise.all([
+      const [targets, assigns, anl, goal, quiz, att] = await Promise.all([
         dataService.getTargets(user.userId, { date: today }),
         dataService.getAssignments(user.userId),
-        dataService.getExams(user.userId),
         dataService.getAnalytics(user.userId),
         dataService.getCareerGoal(user.userId),
         dataService.getLatestQuizScore(user.userId),
@@ -46,7 +44,6 @@ export default function Home() {
       ]);
       setTodayTargets(targets);
       setAssignments(sortByPriority(assigns).slice(0, 3));
-      setExams(ex.filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 2));
       setAnalytics(anl);
       setCareerGoal(goal);
       setLatestQuiz(quiz);
@@ -62,93 +59,83 @@ export default function Home() {
   const studyHoursToday = ((analytics?.studyTime?.today || 0) / 3600).toFixed(1);
   const activeStep = roadmap?.steps?.find(s => s.status === 'active') || roadmap?.steps?.[0];
   const urgentAssignment = assignments[0];
-  const nextExam = exams[0];
 
   const firstNameDisplay = profile?.name?.split(' ')[0] || user?.name?.split(' ')[0] || 'Student';
 
   const QUICK_ACTIONS = [
-    { icon: <Timer size={20} />, label: 'Study Timer', to: '/timer' },
-    { icon: <CheckSquare size={20} />, label: "Daily Targets", to: '/targets' },
-    { icon: <Compass size={20} />, label: 'FutureForge', to: '/roadmap' },
-    { icon: <Award size={20} />, label: 'Skill Quiz', to: '/skill-quiz' },
-    { icon: <Plus size={20} />, label: 'Add Task', to: '/assignments' },
+    { icon: <CheckSquare size={18} />, label: "Today's Targets", to: '/targets' },
+    { icon: <Timer size={18} />, label: 'Study Timer', to: '/timer' },
+    { icon: <Compass size={18} />, label: 'FutureForge', to: '/roadmap' },
+    { icon: <Plus size={18} />, label: 'Add Task', to: '/assignments' },
+    { icon: <Award size={18} />, label: 'Skill Quiz', to: '/skill-quiz' },
   ];
 
+  // Attendance health calculation
+  const totalAttDays = attendance?.totalWorkingDays || 78;
+  const presentAttDays = attendance?.presentDays || 61;
+  const attPct = totalAttDays > 0 ? Math.round((presentAttDays / totalAttDays) * 100) : 85;
+  const attSafe = attPct >= 75;
+
   return (
-    <AppLayout pageTitle="Home">
-      {/* Ultra-Premium Hero / Executive Command Header */}
-      <div
-        style={{
-          background: 'var(--gradient-hero)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-xl)',
-          padding: 'var(--space-8)',
-          marginBottom: 'var(--space-6)',
-          position: 'relative',
-          overflow: 'hidden',
-          boxShadow: 'var(--shadow-md)',
-        }}
-      >
-        <div style={{ position: 'absolute', right: -40, top: -40, width: 220, height: 220, background: 'radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <AppLayout pageTitle="Command Center">
+      {/* ── 1. GREETING & DESTINATION HERO ── */}
+      <div className="command-hero">
+        <div className="command-hero-glow" aria-hidden="true" />
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-4)', position: 'relative', zIndex: 1 }}>
-          <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', background: 'rgba(13, 148, 136, 0.1)', border: '1px solid rgba(13, 148, 136, 0.25)', borderRadius: 'var(--radius-full)', color: 'var(--color-primary)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 'var(--space-2)' }}>
-              <Sparkles size={12} /> Career Command Center
-            </div>
-            <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.03em', margin: '4px 0 6px' }}>
-              {greeting}, {firstNameDisplay}!
-            </h1>
-            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', maxWidth: 620, lineHeight: 1.55 }}>
-              Your next step toward becoming a <strong>{careerGoal?.jobRole || 'Software Engineer'}</strong> in <strong>{careerGoal?.country || 'Germany'}</strong> begins with today's focused sessions.
-            </p>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div className="command-hero-badge">
+            <Sparkles size={12} /> Personal Intelligence Command Center
           </div>
 
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <button className="btn btn-primary" onClick={() => navigate('/targets')}>
-              <CheckSquare size={15} /> Resume Daily Targets <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
+          <h1 className="command-hero-title">
+            {greeting}, {firstNameDisplay}!
+          </h1>
 
-        {/* Milestone Indicator Strip */}
-        {activeStep && (
-          <div
-            style={{
-              marginTop: 'var(--space-6)',
-              padding: 'var(--space-3) var(--space-4)',
-              background: 'var(--color-surface-alt)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 'var(--space-3)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-              <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-champagne-text)', background: 'rgba(212, 175, 122, 0.15)', padding: '2px 8px', borderRadius: 'var(--radius-sm)' }}>
-                Active Milestone
-              </span>
-              <span style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: 'var(--font-size-xs)' }}>
-                {activeStep.title}
-              </span>
-            </div>
+          <p className="command-hero-desc">
+            Navigating your pathway toward becoming a <strong>{careerGoal?.jobRole || 'Software Engineer'}</strong> in <strong>{careerGoal?.country || 'Germany'}</strong>.
+          </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: 200 }}>
-              <div style={{ width: 120 }}>
-                <ProgressBar value={activeStep.progress || 0} size="sm" />
+          {/* Active Milestone Bar */}
+          {activeStep && (
+            <div className="command-active-milestone" onClick={() => navigate('/roadmap')}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1, minWidth: 0 }}>
+                <span className="command-milestone-pill">
+                  Active Milestone
+                </span>
+                <span className="command-milestone-title">
+                  {activeStep.title}
+                </span>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-primary)' }}>
-                {activeStep.progress || 0}%
-              </span>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexShrink: 0 }}>
+                <div style={{ width: 80 }} className="hide-on-mobile-xs">
+                  <ProgressBar value={activeStep.progress || 0} size="sm" />
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-primary)' }}>
+                  {activeStep.progress || 0}%
+                </span>
+                <ChevronRight size={14} style={{ opacity: 0.6 }} />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Stats KPI Row */}
+      {/* ── 2. QUICK ACTIONS STRIP ── */}
+      <div className="command-quick-actions">
+        {QUICK_ACTIONS.map(act => (
+          <button
+            key={act.label}
+            className="command-action-chip"
+            onClick={() => navigate(act.to)}
+          >
+            <div className="command-action-icon">{act.icon}</div>
+            <span>{act.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── 3. HOW AM I DOING? (KEY METRICS ROW) ── */}
       <div className="grid grid-4" style={{ marginBottom: 'var(--space-6)' }}>
         <StatCard
           label="Active Streak"
@@ -163,58 +150,41 @@ export default function Home() {
           icon={<CheckSquare size={18} />}
         />
         <StatCard
-          label="Focused Study Time"
+          label="Focused Study"
           value={`${studyHoursToday}h`}
-          meta="Logged via Timer"
+          meta="Logged today"
           icon={<Timer size={18} />}
         />
         <StatCard
-          label="Diagnostic Mastery"
-          value={latestQuiz ? `${latestQuiz.score}%` : 'Pending'}
-          meta={latestQuiz ? latestQuiz.topic : 'Skill Quiz Ready'}
-          icon={<Award size={18} />}
+          label="Attendance Health"
+          value={`${attPct}%`}
+          meta={attSafe ? 'Above 75% threshold' : 'Below 75% threshold'}
+          icon={attSafe ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
         />
       </div>
 
-      {/* Main Command Center Columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
-        {/* Left Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Quick Action Navigation Strip */}
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
-              <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Action Shortcuts
-              </span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 'var(--space-2)' }}>
-              {QUICK_ACTIONS.map(act => (
-                <button
-                  key={act.label}
-                  className="quick-action"
-                  onClick={() => navigate(act.to)}
-                >
-                  <div className="quick-action-icon" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-primary)' }}>
-                    {act.icon}
-                  </div>
-                  <span>{act.label}</span>
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          {/* Today's Learning Targets */}
+      {/* ── 4. WHAT MATTERS TODAY? (RESPONSIVE GRID) ── */}
+      <div className="command-main-grid">
+        
+        {/* Left / Primary Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          
+          {/* Today's Practical Learning Targets */}
           <Card>
             <div className="card-header">
-              <h2 className="card-title"><CheckSquare size={18} className="text-primary" /> Today's Practical Targets</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/targets')}>Manage All →</button>
+              <h2 className="card-title">
+                <CheckSquare size={18} className="text-primary" /> Today's Practical Targets
+              </h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/targets')}>
+                Manage Targets →
+              </button>
             </div>
 
             {totalToday > 0 ? (
               <>
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-                    <span>Progress: {completedToday} of {totalToday} completed</span>
+                    <span>{completedToday} of {totalToday} targets completed</span>
                     <span>{completionPct}%</span>
                   </div>
                   <ProgressBar value={completionPct} />
@@ -283,17 +253,21 @@ export default function Home() {
             )}
           </Card>
 
-          {/* FutureForge Journey Overview */}
+          {/* FutureForge Journey Progress */}
           <Card>
             <div className="card-header">
-              <h2 className="card-title">🗺️ FutureForge Career Journey</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/roadmap')}>Full Pathway →</button>
+              <h2 className="card-title">
+                <Sparkles size={18} className="text-primary" /> FutureForge Career Pathway
+              </h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/roadmap')}>
+                Full Pathway →
+              </button>
             </div>
             {roadmap ? (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-3)', fontSize: 'var(--font-size-xs)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-3)', fontSize: 'var(--font-size-xs)', flexWrap: 'wrap', gap: 4 }}>
                   <span style={{ color: 'var(--color-text-secondary)' }}>
-                    Target Track: <strong style={{ color: 'var(--color-primary)' }}>{roadmap.goal}</strong> → <strong>{roadmap.country}</strong>
+                    Track: <strong style={{ color: 'var(--color-primary)' }}>{roadmap.goal}</strong> → <strong>{roadmap.country}</strong>
                   </span>
                   <span style={{ color: 'var(--color-text-muted)', fontWeight: 800 }}>
                     {roadmap.completedSteps}/{roadmap.totalSteps} Milestones
@@ -308,20 +282,25 @@ export default function Home() {
               <EmptyState
                 icon="🗺️"
                 title="FutureForge pathway pending"
-                description="Define your target job role to generate a personalized career roadmap."
-                action={{ label: 'Configure Goal', onClick: () => navigate('/goal-career') }}
+                description="Define your target job role in Settings to generate your personalized career roadmap."
+                action={{ label: 'Configure in Settings', onClick: () => navigate('/settings') }}
               />
             )}
           </Card>
         </div>
 
-        {/* Right Sidebar Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Target Career Goal */}
+        {/* Right / Secondary Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          
+          {/* Target Career Destination (View Only) */}
           <Card>
             <div className="card-header">
-              <h2 className="card-title" style={{ fontSize: 'var(--font-size-xs)' }}>🎯 Target Career</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/goal-career')}>Edit</button>
+              <h2 className="card-title" style={{ fontSize: 'var(--font-size-xs)' }}>
+                🎯 Target Career Destination
+              </h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/goal-career')}>
+                Discover →
+              </button>
             </div>
             <div>
               <div style={{ fontWeight: 900, fontSize: 'var(--font-size-lg)', color: 'var(--color-text-primary)', marginBottom: 2 }}>
@@ -330,19 +309,32 @@ export default function Home() {
               <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
                 🌍 Destination: <strong>{careerGoal?.country || 'Germany'}</strong>
               </div>
+              {careerGoal?.specialization && (
+                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 4 }}>
+                  ⚡ Track: {careerGoal.specialization}
+                </div>
+              )}
             </div>
           </Card>
 
-          {/* Priority Assignment */}
+          {/* Priority Assignment Task */}
           <Card>
             <div className="card-header">
-              <h2 className="card-title" style={{ fontSize: 'var(--font-size-xs)' }}>⚡ Priority Task</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/assignments')}>View All</button>
+              <h2 className="card-title" style={{ fontSize: 'var(--font-size-xs)' }}>
+                ⚡ Urgent Task
+              </h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/assignments')}>
+                View All
+              </button>
             </div>
             {urgentAssignment ? (
               <div>
-                <div style={{ fontWeight: 700, fontSize: 'var(--font-size-xs)', marginBottom: 2 }}>{urgentAssignment.title}</div>
-                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>{urgentAssignment.subject}</div>
+                <div style={{ fontWeight: 700, fontSize: 'var(--font-size-xs)', marginBottom: 2 }}>
+                  {urgentAssignment.title}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }}>
+                  {urgentAssignment.subject}
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Badge variant={urgentAssignment.priorityCategory === 'HIGH' ? 'error' : urgentAssignment.priorityCategory === 'MEDIUM' ? 'warning' : 'success'}>
                     {urgentAssignment.priorityCategory} Priority
@@ -357,27 +349,27 @@ export default function Home() {
             )}
           </Card>
 
-          {/* Upcoming Exam */}
+          {/* Attendance Safety Snapshot */}
           <Card>
             <div className="card-header">
-              <h2 className="card-title" style={{ fontSize: 'var(--font-size-xs)' }}>📚 Upcoming Assessment</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/exams')}>Planner</button>
+              <h2 className="card-title" style={{ fontSize: 'var(--font-size-xs)' }}>
+                📊 Attendance Status
+              </h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/academic')}>
+                Calculator
+              </button>
             </div>
-            {nextExam ? (
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 'var(--font-size-xs)', marginBottom: 4 }}>{nextExam.name}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <Calendar size={13} style={{ color: 'var(--color-warning)' }} />
-                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                    {nextExam.date} · {Math.ceil((new Date(nextExam.date) - new Date()) / (1000 * 60 * 60 * 24))} days left
-                  </span>
-                </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 800, color: attSafe ? 'var(--color-success)' : 'var(--color-error)' }}>
+                  {attPct}% {attSafe ? '✓ Safe' : '⚠️ At Risk'}
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+                  {presentAttDays} / {totalAttDays} days
+                </span>
               </div>
-            ) : (
-              <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textAlign: 'center', padding: 'var(--space-2) 0' }}>
-                No upcoming exams scheduled.
-              </div>
-            )}
+              <ProgressBar value={attPct} variant={attSafe ? 'success' : 'error'} size="sm" />
+            </div>
           </Card>
 
           {/* Daily Mindset & Motivation */}
@@ -390,9 +382,9 @@ export default function Home() {
             </p>
             <p style={{ fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 700 }}>— {quote.author}</p>
           </Card>
+
         </div>
       </div>
     </AppLayout>
   );
 }
-

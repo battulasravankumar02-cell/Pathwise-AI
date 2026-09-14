@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout.jsx';
-import { Card, Badge, SectionHeader, Alert, ConfirmDialog } from '../components/ui/index.jsx';
+import { Card, Badge, SectionHeader, Alert, ConfirmDialog, Modal } from '../components/ui/index.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { dataService } from '../services/dataService.js';
 import { testAIConnection } from '../services/aiService.js';
-import { Moon, Sun, Sparkles, Key, RefreshCw, User, CheckCircle, AlertCircle, Trash2, Globe } from 'lucide-react';
+import { Moon, Sun, Sparkles, Key, RefreshCw, User, CheckCircle, AlertCircle, Trash2, Globe, Target, MapPin, Briefcase } from 'lucide-react';
 
 const PROVIDER_MODELS = {
   gemini: [
@@ -19,19 +19,47 @@ const PROVIDER_MODELS = {
   ],
 };
 
+const SUGGESTED_ROLES = [
+  'Software Engineer', 'Data Scientist', 'Machine Learning Engineer',
+  'Cloud / DevOps Engineer', 'Full Stack Developer', 'Cybersecurity Specialist'
+];
+
+const DESTINATIONS = [
+  { code: 'Germany', name: '🇩🇪 Germany' },
+  { code: 'USA', name: '🇺🇸 USA' },
+  { code: 'Canada', name: '🇨🇦 Canada' },
+  { code: 'UK', name: '🇬🇧 UK' },
+  { code: 'Australia', name: '🇦🇺 Australia' },
+  { code: 'Netherlands', name: '🇳🇱 Netherlands' },
+  { code: 'India', name: '🇮🇳 India' },
+  { code: 'Other', name: '🌍 Other' },
+];
+
 export default function Settings() {
   const { user } = useAuth();
-  const { theme, toggleTheme, showToast, refreshProfile, profile, careerGoal } = useApp();
+  const { theme, toggleTheme, showToast, refreshProfile, refreshRoadmap, profile, careerGoal } = useApp();
 
+  // Academic Profile Form
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || profile?.name || 'Alex Chen',
+    name: user?.name || profile?.name || 'PathWise Student',
     email: user?.email || 'student@pathwise.ai',
-    college: profile?.college || 'Institute of Technology',
-    course: profile?.course || 'B.Tech / Computer Science',
-    year: profile?.year || '3rd Year',
-    jobRole: careerGoal?.jobRole || 'Software Engineer',
-    country: careerGoal?.country || 'Germany',
+    college: profile?.college || '',
+    course: profile?.course || '',
+    year: profile?.year || '',
+    graduationYear: profile?.graduationYear || '',
   });
+
+  // Dedicated Career & Goals Form (Editable Only Here)
+  const [careerForm, setCareerForm] = useState({
+    jobRole: careerGoal?.jobRole || 'Software Engineer',
+    specialization: careerGoal?.specialization || '',
+    country: careerGoal?.country || 'Germany',
+    industry: careerGoal?.industry || '',
+  });
+
+  // Roadmap Adaptation Confirmation Modal State
+  const [adaptationModalOpen, setAdaptationModalOpen] = useState(false);
+  const [pendingCareerGoal, setPendingCareerGoal] = useState(null);
 
   // BYOK AI Configuration State
   const [aiProvider, setAiProvider] = useState('gemini');
@@ -46,8 +74,13 @@ export default function Settings() {
 
   useEffect(() => {
     if (!user) return;
-    async function loadAI() {
-      const config = await dataService.getAISettings(user.userId);
+    async function loadData() {
+      const [config, goal, prof] = await Promise.all([
+        dataService.getAISettings(user.userId),
+        dataService.getCareerGoal(user.userId),
+        dataService.getStudentProfile(user.userId),
+      ]);
+
       if (config) {
         setAiConfig(config);
         setAiProvider(config.provider || 'gemini');
@@ -56,8 +89,28 @@ export default function Settings() {
           setApiKey(config.maskedKey || '');
         }
       }
+
+      if (goal) {
+        setCareerForm({
+          jobRole: goal.jobRole || 'Software Engineer',
+          specialization: goal.specialization || '',
+          country: goal.country || 'Germany',
+          industry: goal.industry || '',
+        });
+      }
+
+      if (prof) {
+        setProfileForm({
+          name: prof.name || user?.name || 'PathWise Student',
+          email: user?.email || 'student@pathwise.ai',
+          college: prof.college || '',
+          course: prof.course || '',
+          year: prof.year || '',
+          graduationYear: prof.graduationYear || '',
+        });
+      }
     }
-    loadAI();
+    loadData();
   }, [user]);
 
   function handleProviderChange(e) {
@@ -73,19 +126,57 @@ export default function Settings() {
   async function handleSaveProfile(e) {
     e.preventDefault();
     if (user?.userId) {
-      await dataService.saveProfile(user.userId, {
+      await dataService.saveStudentProfile(user.userId, {
         name: profileForm.name,
         college: profileForm.college,
         course: profileForm.course,
         year: profileForm.year,
-      });
-      await dataService.saveCareerGoal(user.userId, {
-        jobRole: profileForm.jobRole,
-        country: profileForm.country,
+        graduationYear: profileForm.graduationYear,
       });
       await refreshProfile();
+      showToast('Student academic profile updated successfully!', 'success');
     }
-    showToast('Profile & Career parameters updated successfully!', 'success');
+  }
+
+  async function handleCareerFormSubmit(e) {
+    e.preventDefault();
+    if (!user?.userId) return;
+
+    const roleChanged = (careerGoal?.jobRole || '') !== careerForm.jobRole;
+    const countryChanged = (careerGoal?.country || '') !== careerForm.country;
+
+    const updated = {
+      hasGoal: true,
+      jobRole: careerForm.jobRole.trim() || 'Software Engineer',
+      specialization: careerForm.specialization.trim(),
+      country: careerForm.country || 'Germany',
+      industry: careerForm.industry.trim(),
+    };
+
+    if (roleChanged || countryChanged) {
+      setPendingCareerGoal(updated);
+      setAdaptationModalOpen(true);
+    } else {
+      await dataService.saveCareerGoal(user.userId, updated, { regenerateRoadmap: false });
+      await refreshProfile();
+      showToast('Career parameters saved successfully!', 'success');
+    }
+  }
+
+  async function handleApplyRoadmapAdaptation(regenerate) {
+    if (!user?.userId || !pendingCareerGoal) return;
+    setAdaptationModalOpen(false);
+
+    await dataService.saveCareerGoal(user.userId, pendingCareerGoal, { regenerateRoadmap: regenerate });
+    await refreshProfile();
+    await refreshRoadmap();
+
+    if (regenerate) {
+      showToast('🎯 Career goal updated and new FutureForge roadmap generated!', 'success');
+    } else {
+      showToast('Career goal updated. Existing roadmap preserved.', 'info');
+    }
+    setPendingCareerGoal(null);
   }
 
   async function handleTestConnection() {
@@ -152,16 +243,128 @@ export default function Settings() {
   return (
     <AppLayout pageTitle="Settings">
       <SectionHeader
-        title="Settings & Preferences ⚙️"
-        subtitle="Manage your profile, appearances, and Bring-Your-Own-Key (BYOK) AI intelligence settings"
+        title="Settings & System Governance ⚙️"
+        subtitle="Authoritative configuration for your career destination, academic profile, and AI copilot"
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)', maxWidth: 840 }}>
-        {/* Student Profile Settings */}
+        
+        {/* ============================================================ */}
+        {/* 1. CAREER & GOALS GOVERNANCE (EXCLUSIVE EDIT LOCATION)         */}
+        {/* ============================================================ */}
+        <Card id="career" style={{ border: '2px solid rgba(13, 148, 136, 0.35)', background: 'linear-gradient(180deg, var(--color-surface), rgba(13, 148, 136, 0.02))' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'rgba(13, 148, 136, 0.12)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Target size={20} />
+              </div>
+              <div>
+                <h2 className="card-title" style={{ margin: 0 }}>Career & Goal Governance</h2>
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
+                  Primary authoritative source for downstream personalization, roadmap, and AI Mentor
+                </p>
+              </div>
+            </div>
+            <Badge variant="primary">Authoritative Source</Badge>
+          </div>
+
+          <form onSubmit={handleCareerFormSubmit}>
+            {/* Quick role suggestions */}
+            <div style={{ marginBottom: 'var(--space-3)' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
+                Quick Suggestions:
+              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                {SUGGESTED_ROLES.map(role => (
+                  <button
+                    key={role}
+                    type="button"
+                    className="btn btn-ghost btn-xs"
+                    onClick={() => setCareerForm(prev => ({ ...prev, jobRole: role }))}
+                    style={{
+                      background: careerForm.jobRole === role ? 'var(--color-primary)' : 'var(--color-surface-alt)',
+                      color: careerForm.jobRole === role ? 'white' : 'var(--color-text-secondary)',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: 11,
+                      padding: '3px 10px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-2" style={{ gap: 'var(--space-4)' }}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="cg-jobRole">Target Career Role *</label>
+                <input
+                  id="cg-jobRole"
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., Software Engineer, Data Scientist"
+                  value={careerForm.jobRole}
+                  onChange={e => setCareerForm({ ...careerForm, jobRole: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="cg-country">Dream Destination Country *</label>
+                <select
+                  id="cg-country"
+                  className="form-select"
+                  value={careerForm.country}
+                  onChange={e => setCareerForm({ ...careerForm, country: e.target.value })}
+                  required
+                >
+                  {DESTINATIONS.map(d => (
+                    <option key={d.code} value={d.code}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-2" style={{ gap: 'var(--space-4)' }}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="cg-specialization">Track / Specialization (optional)</label>
+                <input
+                  id="cg-specialization"
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., Backend, Cloud, Distributed Systems"
+                  value={careerForm.specialization}
+                  onChange={e => setCareerForm({ ...careerForm, specialization: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="cg-industry">Target Industry (optional)</label>
+                <input
+                  id="cg-industry"
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., Tech/Product, FinTech, AI Labs"
+                  value={careerForm.industry}
+                  onChange={e => setCareerForm({ ...careerForm, industry: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary" id="save-career-btn" style={{ marginTop: 'var(--space-2)' }}>
+              Save Career & Destination Changes
+            </button>
+          </form>
+        </Card>
+
+        {/* ============================================================ */}
+        {/* 2. STUDENT ACADEMIC PROFILE                                  */}
+        {/* ============================================================ */}
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
             <User size={20} className="text-primary" />
-            <h2 className="card-title">Student Profile & Career Target</h2>
+            <h2 className="card-title">Academic & Student Profile</h2>
           </div>
           <form onSubmit={handleSaveProfile}>
             <div className="grid grid-2" style={{ gap: 'var(--space-4)' }}>
@@ -195,52 +398,58 @@ export default function Settings() {
                   id="course"
                   type="text"
                   className="form-input"
+                  placeholder="e.g., B.Tech / Computer Science"
                   value={profileForm.course}
                   onChange={e => setProfileForm({ ...profileForm, course: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="year">Academic Stage / Year</label>
+                <label className="form-label" htmlFor="college">College / University</label>
                 <input
-                  id="year"
+                  id="college"
                   type="text"
                   className="form-input"
-                  value={profileForm.year}
-                  onChange={e => setProfileForm({ ...profileForm, year: e.target.value })}
+                  placeholder="e.g., Institute of Technology"
+                  value={profileForm.college}
+                  onChange={e => setProfileForm({ ...profileForm, college: e.target.value })}
                 />
               </div>
             </div>
 
             <div className="grid grid-2" style={{ gap: 'var(--space-4)' }}>
               <div className="form-group">
-                <label className="form-label" htmlFor="job-role">Target Career Role</label>
+                <label className="form-label" htmlFor="year">Current Academic Year</label>
                 <input
-                  id="job-role"
+                  id="year"
                   type="text"
                   className="form-input"
-                  value={profileForm.jobRole}
-                  onChange={e => setProfileForm({ ...profileForm, jobRole: e.target.value })}
+                  placeholder="e.g., 3rd Year"
+                  value={profileForm.year}
+                  onChange={e => setProfileForm({ ...profileForm, year: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="country">Target Country</label>
+                <label className="form-label" htmlFor="grad-year">Expected Graduation Year</label>
                 <input
-                  id="country"
+                  id="grad-year"
                   type="text"
                   className="form-input"
-                  value={profileForm.country}
-                  onChange={e => setProfileForm({ ...profileForm, country: e.target.value })}
+                  placeholder="e.g., 2026"
+                  value={profileForm.graduationYear}
+                  onChange={e => setProfileForm({ ...profileForm, graduationYear: e.target.value })}
                 />
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" id="save-profile-btn" style={{ marginTop: 'var(--space-2)' }}>
-              Save Profile Changes
+            <button type="submit" className="btn btn-secondary" id="save-profile-btn" style={{ marginTop: 'var(--space-2)' }}>
+              Save Academic Profile Changes
             </button>
           </form>
         </Card>
 
-        {/* Appearance & Theme */}
+        {/* ============================================================ */}
+        {/* 3. APPEARANCE & THEME                                        */}
+        {/* ============================================================ */}
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
             {theme === 'dark' ? <Moon size={20} className="text-primary" /> : <Sun size={20} className="text-primary" />}
@@ -250,7 +459,7 @@ export default function Settings() {
             <div>
               <div style={{ fontWeight: 700 }}>Color Mode</div>
               <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                Current UI theme: <strong>{theme === 'dark' ? 'Dark Mode 🌙' : 'Light Mode ☀️'}</strong>
+                Current UI theme: <strong>{theme === 'dark' ? 'Obsidian Dark Mode 🌙' : 'Warm Ivory Light Mode ☀️'}</strong>
               </div>
             </div>
             <button className="btn btn-secondary" onClick={toggleTheme} id="toggle-theme-settings-btn">
@@ -259,45 +468,31 @@ export default function Settings() {
           </div>
         </Card>
 
-        {/* BYOK AI / LLM Configuration */}
+        {/* ============================================================ */}
+        {/* 4. BYOK AI COPILOT ENGINE CONFIGURATION                      */}
+        {/* ============================================================ */}
         <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-              <Sparkles size={20} className="text-primary" />
-              <h2 className="card-title">AI / LLM Configuration (BYOK)</h2>
-            </div>
-            {aiConfig?.hasKey && <Badge variant="success">Custom Key Active</Badge>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+            <Key size={20} className="text-primary" />
+            <h2 className="card-title">Bring-Your-Own-Key (BYOK) AI Intelligence</h2>
           </div>
+          <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', lineHeight: 1.5 }}>
+            Configure your own private API key for Google Gemini or OpenAI. When no custom key is added, PathWise AI uses deterministic intelligence and standard serverless processing.
+          </p>
 
-          <Alert type="info">
-            PathWise AI comes configured with intelligent learning copilot capabilities out-of-the-box. You can optionally plug in your own API key (Bring Your Own Key) for custom provider model reasoning. (Note: Web Search uses developer-managed Groq environment configuration).
-          </Alert>
-
-          <form onSubmit={handleSaveAISettings} style={{ marginTop: 'var(--space-5)' }}>
+          <form onSubmit={handleSaveAISettings}>
             <div className="grid grid-2" style={{ gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-              {/* Provider Dropdown */}
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label" htmlFor="ai-provider">AI Provider</label>
-                <select
-                  id="ai-provider"
-                  className="form-select"
-                  value={aiProvider}
-                  onChange={handleProviderChange}
-                >
+                <select id="ai-provider" className="form-select" value={aiProvider} onChange={handleProviderChange}>
                   <option value="gemini">Google Gemini</option>
                   <option value="openai">OpenAI</option>
                 </select>
               </div>
 
-              {/* Model Dropdown */}
-              <div className="form-group">
-                <label className="form-label" htmlFor="ai-model">Model</label>
-                <select
-                  id="ai-model"
-                  className="form-select"
-                  value={aiModel}
-                  onChange={e => setAiModel(e.target.value)}
-                >
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" htmlFor="ai-model">AI Model</label>
+                <select id="ai-model" className="form-select" value={aiModel} onChange={e => setAiModel(e.target.value)}>
                   {(PROVIDER_MODELS[aiProvider] || []).map(m => (
                     <option key={m.id} value={m.id}>{m.name}</option>
                   ))}
@@ -305,108 +500,134 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Masked API Key Input with Toggle */}
-            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-              <label className="form-label" htmlFor="ai-api-key">
-                Provider API Key ({aiProvider.toUpperCase()})
+            <div className="form-group">
+              <label className="form-label" htmlFor="api-key">
+                {aiProvider === 'gemini' ? 'Google Gemini API Key' : 'OpenAI API Key'}
               </label>
-              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <div style={{ position: 'relative' }}>
                 <input
-                  id="ai-api-key"
+                  id="api-key"
                   type={showKey ? 'text' : 'password'}
                   className="form-input"
-                  placeholder={aiProvider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
+                  placeholder={aiConfig?.hasKey ? '••••••••••••••••••••' : `Enter your ${aiProvider.toUpperCase()} API key`}
                   value={apiKey}
-                  onChange={e => { setApiKey(e.target.value); setTestResult(null); }}
-                  style={{ fontFamily: showKey ? 'inherit' : 'monospace' }}
+                  onChange={e => setApiKey(e.target.value)}
+                  style={{ paddingRight: 70 }}
                 />
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-ghost btn-xs"
                   onClick={() => setShowKey(!showKey)}
-                  style={{ minWidth: 64 }}
+                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 11 }}
                 >
                   {showKey ? 'Hide' : 'Show'}
                 </button>
               </div>
-              <span className="form-help">
-                Keys are stored securely in browser memory and are never exposed in client bundles.
-              </span>
             </div>
 
-            {/* Test Connection Result Feedback */}
-            {testResult && (
-              <div style={{ marginBottom: 'var(--space-4)' }}>
-                <Alert type={testResult.success ? 'success' : 'error'}>
-                  {testResult.message}
-                </Alert>
-              </div>
-            )}
-
-            {/* Actions Bar */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center', marginTop: 'var(--space-3)' }}>
+              <button type="submit" className="btn btn-primary btn-sm">
+                Save AI Settings
+              </button>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary btn-sm"
                 onClick={handleTestConnection}
-                disabled={testingConnection || !apiKey}
-                id="test-ai-connection-btn"
+                disabled={testingConnection || (!apiKey && !aiConfig?.hasKey)}
               >
                 {testingConnection ? 'Testing...' : 'Test Connection'}
               </button>
-
-              <button
-                type="submit"
-                className="btn btn-primary"
-                id="save-ai-settings-btn"
-              >
-                Save AI Settings
-              </button>
-
-              {(aiConfig?.hasKey || apiKey) && (
+              {aiConfig?.hasKey && (
                 <button
                   type="button"
-                  className="btn btn-ghost"
+                  className="btn btn-danger btn-sm"
                   onClick={handleRemoveApiKey}
-                  style={{ color: 'var(--color-error)' }}
-                  id="remove-api-key-btn"
                 >
-                  <Trash2 size={14} /> Remove API Key
+                  <Trash2 size={13} /> Remove Custom Key
                 </button>
               )}
             </div>
+
+            {testResult && (
+              <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', borderRadius: 'var(--radius-md)', background: testResult.success ? 'var(--color-success-light)' : 'var(--color-error-light)', fontSize: 'var(--font-size-xs)', fontWeight: 600, color: testResult.success ? 'var(--color-success)' : 'var(--color-error)' }}>
+                {testResult.message}
+              </div>
+            )}
           </form>
         </Card>
 
-        {/* Data Reset */}
-        <Card style={{ border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
-            <RefreshCw size={20} color="var(--color-error)" />
-            <h2 className="card-title" style={{ color: 'var(--color-error)' }}>Data & Workspace Reset</h2>
+        {/* ============================================================ */}
+        {/* 5. DANGER ZONE / DATA RESET                                  */}
+        {/* ============================================================ */}
+        <Card style={{ borderColor: 'rgba(220, 38, 38, 0.25)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+            <div>
+              <div style={{ fontWeight: 800, color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>
+                Reset Local Cache & Practice State
+              </div>
+              <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                Clears cached sessions and resets learning targets to baseline.
+              </div>
+            </div>
+            <button className="btn btn-danger btn-sm" onClick={() => setResetConfirmOpen(true)}>
+              Reset Learning State
+            </button>
           </div>
-          <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-            Reset your personal student workspace records back to fresh state (clears custom study sessions, targets, and quiz logs).
-          </p>
-          <button
-            className="btn btn-danger"
-            onClick={() => setResetConfirmOpen(true)}
-            id="reset-demo-data-btn"
-          >
-            Reset Workspace Data
-          </button>
         </Card>
+
       </div>
 
+      {/* ============================================================ */}
+      {/* ROADMAP ADAPTATION CONFIRMATION MODAL                        */}
+      {/* ============================================================ */}
+      {adaptationModalOpen && pendingCareerGoal && (
+        <Modal
+          isOpen={adaptationModalOpen}
+          onClose={() => setAdaptationModalOpen(false)}
+          title="Career Destination Changed"
+          size="md"
+        >
+          <div>
+            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: 'var(--space-4)' }}>
+              You updated your target career to <strong>{pendingCareerGoal.jobRole}</strong> targeting <strong>{pendingCareerGoal.country}</strong>.
+            </p>
+            <div style={{ background: 'var(--color-primary-light)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3) var(--space-4)', marginBottom: 'var(--space-5)' }}>
+              <div style={{ fontWeight: 700, fontSize: 'var(--font-size-xs)', color: 'var(--color-primary)', marginBottom: 2 }}>
+                💡 Recommendation:
+              </div>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-primary)', margin: 0 }}>
+                PathWise recommends regenerating your personalized FutureForge roadmap and daily targets to align with {pendingCareerGoal.jobRole} requirements in {pendingCareerGoal.country}.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => handleApplyRoadmapAdaptation(false)}
+              >
+                Keep Current Roadmap
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => handleApplyRoadmapAdaptation(true)}
+              >
+                Update Roadmap 🚀
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Reset Confirmation Dialog */}
       <ConfirmDialog
         isOpen={resetConfirmOpen}
         onClose={() => setResetConfirmOpen(false)}
         onConfirm={handleResetData}
-        title="Reset Personal Workspace"
-        message="Are you sure you want to reset your learning workspace records? This action cannot be undone."
-        confirmLabel="Reset Data"
+        title="Reset Learning State"
+        message="Are you sure you want to reset your local session data? Your account credentials and core profile will be retained."
+        confirmLabel="Reset State"
         danger
       />
     </AppLayout>
   );
 }
-

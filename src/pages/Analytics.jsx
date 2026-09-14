@@ -83,8 +83,8 @@ export default function Analytics() {
       {/* Overall Performance Score */}
       {performance && (
         <Card style={{ marginBottom: 'var(--space-6)', background: 'linear-gradient(135deg, rgba(79,110,247,0.05), rgba(124,58,237,0.05))' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)', flexWrap: 'wrap' }}>
-            <div style={{ textAlign: 'center', minWidth: 120 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
+            <div style={{ textAlign: 'center', minWidth: 100, flexShrink: 0 }}>
               <div style={{ fontSize: '3.5rem', fontWeight: 900, color: `var(--color-${performance.label.color})`, lineHeight: 1 }}>
                 {performance.overall}
               </div>
@@ -93,7 +93,7 @@ export default function Analytics() {
                 {performance.label.text}
               </Badge>
             </div>
-            <div style={{ flex: 1, minWidth: 280 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800, marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-base)' }}>
                 Holistic Performance Breakdown
               </div>

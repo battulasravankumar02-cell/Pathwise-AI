@@ -4,19 +4,27 @@ import { useApp } from '../../context/AppContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
 
-export default function Header({ title }) {
+export default function Header({ title, onOpenMenu }) {
   const { toggleTheme, theme, setSidebarOpen, unreadCount, notifications, setNotifications } = useApp();
   const { user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
+  function handleMenuClick() {
+    if (onOpenMenu) {
+      onOpenMenu();
+    } else {
+      setSidebarOpen(prev => !prev);
+    }
+  }
+
   return (
     <header className="header" role="banner">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
         <button
           className="mobile-hamburger"
-          onClick={() => setSidebarOpen(prev => !prev)}
-          aria-label="Toggle sidebar menu"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38 }}
+          onClick={handleMenuClick}
+          aria-label="Toggle navigation menu"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, border: 'none', background: 'transparent', color: 'var(--color-text-primary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
         >
           <Menu size={20} />
         </button>

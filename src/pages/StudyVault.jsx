@@ -244,7 +244,7 @@ export default function StudyVault() {
 
       {/* Search and filters */}
       <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 'min(200px, 100%)' }}>
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
           <input
             type="text"

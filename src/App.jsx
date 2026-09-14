@@ -19,7 +19,7 @@ import StudyTimer from './pages/StudyTimer.jsx';
 import Habits from './pages/Habits.jsx';
 import CalendarPage from './pages/Calendar.jsx';
 import Assignments from './pages/Assignments.jsx';
-import Exams from './pages/Exams.jsx';
+import Learn from './pages/Learn.jsx';
 import Analytics from './pages/Analytics.jsx';
 import AIAssistant from './pages/AIAssistant.jsx';
 import StudyVault from './pages/StudyVault.jsx';
@@ -75,7 +75,7 @@ export default function App() {
             <Route path="/habits" element={<ProtectedRoute><Habits /></ProtectedRoute>} />
             <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
             <Route path="/assignments" element={<ProtectedRoute><Assignments /></ProtectedRoute>} />
-            <Route path="/exams" element={<ProtectedRoute><Exams /></ProtectedRoute>} />
+            <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
             <Route path="/academic" element={<ProtectedRoute><Academic /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
