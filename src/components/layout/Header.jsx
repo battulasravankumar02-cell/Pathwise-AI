@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
 
 export default function Header({ title, onOpenMenu }) {
-  const { toggleTheme, theme, setSidebarOpen, unreadCount, notifications, setNotifications } = useApp();
+  const { toggleTheme, theme, setSidebarOpen, unreadCount, notifications, markNotificationRead, markAllNotificationsRead } = useApp();
   const { user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -28,18 +28,18 @@ export default function Header({ title, onOpenMenu }) {
         >
           <Menu size={20} />
         </button>
-        <h1 className="header-title" style={{ margin: 0 }}>{title}</h1>
+        <h1 className="header-title">{title}</h1>
       </div>
 
-      <div className="header-actions">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
         {/* Theme Toggle */}
         <button
-          className="btn btn-ghost btn-icon"
+          className="btn btn-ghost btn-icon btn-sm"
           onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
-          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
         </button>
 
         {/* Notifications */}
@@ -58,9 +58,8 @@ export default function Header({ title, onOpenMenu }) {
             <NotificationsPanel
               notifications={notifications}
               onClose={() => setShowNotifications(false)}
-              onMarkRead={(id) => {
-                setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-              }}
+              onMarkRead={markNotificationRead}
+              onMarkAllRead={markAllNotificationsRead}
             />
           )}
         </div>

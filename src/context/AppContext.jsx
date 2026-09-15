@@ -11,6 +11,7 @@ export function AppProvider({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [roadmap, setRoadmap] = useState(null);
   const [streak, setStreak] = useState(null);
 
@@ -22,19 +23,33 @@ export function AppProvider({ children }) {
 
   // Load core data on user change
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setProfile(null);
+      setProfileLoading(false);
+      setRoadmap(null);
+      setStreak(null);
+      setNotifications([]);
+      return;
+    }
 
+    setProfileLoading(true);
     async function loadCoreData() {
-      const [p, r, s, n] = await Promise.all([
-        dataService.getStudentProfile(user.userId),
-        dataService.getRoadmap(user.userId),
-        dataService.getStreak(user.userId),
-        dataService.getNotifications(user.userId),
-      ]);
-      setProfile(p);
-      setRoadmap(r);
-      setStreak(s);
-      setNotifications(n || []);
+      try {
+        const [p, r, s, n] = await Promise.all([
+          dataService.getStudentProfile(user.userId),
+          dataService.getRoadmap(user.userId),
+          dataService.getStreak(user.userId),
+          dataService.getNotifications(user.userId),
+        ]);
+        setProfile(p);
+        setRoadmap(r);
+        setStreak(s);
+        setNotifications(n || []);
+      } catch (err) {
+        console.error('Error loading core data:', err);
+      } finally {
+        setProfileLoading(false);
+      }
     }
 
     loadCoreData();
@@ -74,6 +89,25 @@ export function AppProvider({ children }) {
     setRoadmap(r);
   }, [user]);
 
+  const refreshNotifications = useCallback(async () => {
+    if (!user) return;
+    const n = await dataService.getNotifications(user.userId);
+    setNotifications(n || []);
+  }, [user]);
+
+  const markNotificationRead = useCallback(async (id) => {
+    if (!user) return;
+    await dataService.markNotificationRead(user.userId, id);
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  }, [user]);
+
+  const markAllNotificationsRead = useCallback(async () => {
+    if (!user) return;
+    const ids = notifications.map(n => n.id);
+    await dataService.markAllNotificationsRead(user.userId, ids);
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, [user, notifications]);
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
@@ -82,7 +116,8 @@ export function AppProvider({ children }) {
       toasts, showToast, dismissToast,
       sidebarOpen, setSidebarOpen,
       notifications, setNotifications, unreadCount,
-      profile, setProfile, refreshProfile,
+      refreshNotifications, markNotificationRead, markAllNotificationsRead,
+      profile, setProfile, profileLoading, refreshProfile,
       roadmap, setRoadmap, refreshRoadmap,
       streak, setStreak, refreshStreak,
     }}>

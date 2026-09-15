@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { dataService } from '../services/dataService.js';
 import { testAIConnection } from '../services/aiService.js';
-import { Moon, Sun, Sparkles, Key, RefreshCw, User, CheckCircle, AlertCircle, Trash2, Globe, Target, MapPin, Briefcase } from 'lucide-react';
+import { reminderService } from '../services/reminderService.js';
+import { Moon, Sun, Sparkles, Key, RefreshCw, User, CheckCircle, AlertCircle, Trash2, Globe, Target, MapPin, Briefcase, Bell } from 'lucide-react';
 
 const PROVIDER_MODELS = {
   gemini: [
@@ -71,6 +72,35 @@ export default function Settings() {
   const [testResult, setTestResult] = useState(null);
 
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [browserPermission, setBrowserPermission] = useState(() => reminderService.getBrowserPermission());
+
+  async function handleEnableBrowserNotifications() {
+    const perm = await reminderService.requestBrowserPermission();
+    setBrowserPermission(perm);
+    if (perm === 'granted') {
+      showToast('Browser notifications enabled successfully!', 'success');
+      reminderService.sendBrowserNotification('Study Pulse AI Reminders Active', {
+        body: "You will receive alerts for today's study topics and upcoming assignment deadlines.",
+      });
+    } else if (perm === 'denied') {
+      showToast('Notifications blocked in browser. Please permit them in site settings.', 'warning');
+    }
+  }
+
+  function handleSendTestNotification() {
+    if (browserPermission !== 'granted') {
+      showToast('Please enable notifications first.', 'warning');
+      return;
+    }
+    const notif = reminderService.sendBrowserNotification('Study Reminder Test', {
+      body: "Your scheduled topic for today is ready.\nSubject: DBMS\nTopic: Normalization & SQL Indexes\nTime: Today",
+    });
+    if (notif) {
+      showToast('Test notification sent to your system!', 'success');
+    } else {
+      showToast('Notification could not be dispatched. Check browser permission.', 'error');
+    }
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -464,6 +494,69 @@ export default function Settings() {
             </div>
             <button className="btn btn-secondary" onClick={toggleTheme} id="toggle-theme-settings-btn">
               Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
+            </button>
+          </div>
+        </Card>
+
+        {/* ============================================================ */}
+        {/* NOTIFICATIONS & STUDY REMINDERS                              */}
+        {/* ============================================================ */}
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <Bell size={20} className="text-primary" />
+              <h2 className="card-title">Notifications & Study Reminders</h2>
+            </div>
+            <span style={{
+              fontSize: 'var(--font-size-xs)',
+              fontWeight: 700,
+              padding: '3px 10px',
+              borderRadius: '999px',
+              background: browserPermission === 'granted' ? 'rgba(34, 197, 94, 0.15)' : browserPermission === 'denied' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(234, 179, 8, 0.15)',
+              color: browserPermission === 'granted' ? 'var(--color-success)' : browserPermission === 'denied' ? 'var(--color-error)' : '#eab308',
+            }}>
+              {browserPermission === 'granted' ? '✓ Browser Notifications Active' : browserPermission === 'denied' ? '✕ Blocked in Browser' : '○ In-App Reminders Active'}
+            </span>
+          </div>
+
+          <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: 'var(--space-4)' }}>
+            Study Pulse AI automatically monitors today&apos;s study schedule and your coursework deadlines. In-app notifications are always enabled. Enable browser alerts to receive reminders while your browser is open.
+          </p>
+
+          <div className="grid grid-2" style={{ gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+            <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}>
+              <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', marginBottom: 3 }}>📖 Today&apos;s Study Topic Reminders</div>
+              <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
+                Alerts you to your daily syllabus topic and core practice modules generated from your career roadmap.
+              </div>
+            </div>
+
+            <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}>
+              <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', marginBottom: 3 }}>⏰ Assignment & Deadline Alerts</div>
+              <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
+                Warns you 48 hours before assignments are due and flags overdue submissions directly on your dashboard.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+            {browserPermission !== 'granted' && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleEnableBrowserNotifications}
+                id="enable-notifications-btn"
+              >
+                <Bell size={15} /> Enable Browser Notifications
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleSendTestNotification}
+              id="test-notification-btn"
+            >
+              Send Test Reminder
             </button>
           </div>
         </Card>

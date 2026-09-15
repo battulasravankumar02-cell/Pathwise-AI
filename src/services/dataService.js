@@ -7,6 +7,7 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient.js';
 import { generatePersonalizedRoadmap } from './roadmapGenerator.js';
 import { calculatePriorityScore } from './priorityEngine.js';
+import { reminderService } from './reminderService.js';
 
 const PREFIX = 'pathwise_';
 
@@ -69,6 +70,7 @@ export const dataService = {
   // ============================================================
   async getStudentProfile(userId) {
     if (!userId) return null;
+    let profile = null;
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -76,12 +78,22 @@ export const dataService = {
           .select('*')
           .eq('user_id', userId)
           .single();
-        if (data && !error) return data;
+        if (data && !error) {
+          profile = {
+            ...data,
+            userId: data.user_id || data.userId || userId,
+            graduationYear: data.graduation_year || data.graduationYear || '',
+            onboardingComplete: data.onboarding_complete !== undefined ? data.onboarding_complete : (data.onboardingComplete || false),
+          };
+        }
       } catch {
         // Fallback to local
       }
     }
-    return getItem(userId, 'profile', null);
+    if (!profile) {
+      profile = getItem(userId, 'profile', null);
+    }
+    return profile;
   },
 
   async saveStudentProfile(userId, profile) {
@@ -125,6 +137,7 @@ export const dataService = {
   // ============================================================
   async getCareerGoal(userId) {
     if (!userId) return null;
+    let goal = null;
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase
@@ -132,10 +145,20 @@ export const dataService = {
           .select('*')
           .eq('user_id', userId)
           .single();
-        if (data && !error) return data;
+        if (data && !error) {
+          goal = {
+            ...data,
+            userId: data.user_id || data.userId || userId,
+            jobRole: data.job_role || data.jobRole || '',
+            hasGoal: data.has_goal !== undefined ? data.has_goal : (data.hasGoal || false),
+          };
+        }
       } catch {}
     }
-    return getItem(userId, 'career_goal', null);
+    if (!goal) {
+      goal = getItem(userId, 'career_goal', null);
+    }
+    return goal;
   },
 
   async saveCareerGoal(userId, goal, options = { regenerateRoadmap: true }) {
@@ -900,14 +923,33 @@ export const dataService = {
   },
 
   // ============================================================
-  // NOTIFICATIONS
+  // NOTIFICATIONS & REMINDER ENGINE (100% REAL DATA DRIVEN)
   // ============================================================
   async getNotifications(userId) {
     if (!userId) return [];
-    return getItem(userId, 'notifications', [
-      { id: 'notif-1', title: 'Daily Learning Target Active', message: 'Your daily target is ready in FutureForge.', time: '10m ago', read: false, type: 'target' },
-      { id: 'notif-2', title: 'Streak Active 🔥', message: 'Complete a study target today to maintain your consistency streak.', time: '1h ago', read: false, type: 'streak' },
-    ]);
+    try {
+      const [targets, assignments] = await Promise.all([
+        this.getTargets(userId),
+        this.getAssignments(userId),
+      ]);
+      const reminders = await reminderService.computeReminders(userId, { targets, assignments });
+      // Dispatch browser notification alert if enabled & permitted
+      reminderService.dispatchEligibleBrowserAlerts(reminders);
+      return reminders;
+    } catch (err) {
+      console.warn('Error evaluating reminders:', err);
+      return [];
+    }
+  },
+
+  async markNotificationRead(userId, notificationId) {
+    reminderService.markAsRead(userId, notificationId);
+    return { success: true };
+  },
+
+  async markAllNotificationsRead(userId, notificationIds) {
+    reminderService.markAllAsRead(userId, notificationIds);
+    return { success: true };
   },
 
   // ============================================================

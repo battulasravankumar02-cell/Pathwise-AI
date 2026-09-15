@@ -91,9 +91,16 @@ export default function Home() {
             {greeting}, {firstNameDisplay}!
           </h1>
 
-          <p className="command-hero-desc">
-            Navigating your pathway toward becoming a <strong>{careerGoal?.jobRole || 'Software Engineer'}</strong> in <strong>{careerGoal?.country || 'Germany'}</strong>.
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
+            <p className="command-hero-desc" style={{ margin: 0 }}>
+              Navigating your pathway toward becoming a <strong>{careerGoal?.jobRole || 'Software Engineer'}</strong> in <strong>{careerGoal?.country || 'Germany'}</strong>.
+            </p>
+            {profile?.course && (
+              <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(255, 255, 255, 0.12)', padding: '3px 10px', borderRadius: 'var(--radius-full)', color: '#ccfbf1', border: '1px solid rgba(255,255,255,0.18)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                🎓 {profile.course} • {profile.stream || 'Technology'}
+              </span>
+            )}
+          </div>
 
           {/* Active Milestone Bar */}
           {activeStep && (

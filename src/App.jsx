@@ -25,27 +25,97 @@ import AIAssistant from './pages/AIAssistant.jsx';
 import StudyVault from './pages/StudyVault.jsx';
 import Settings from './pages/Settings.jsx';
 
-// Root Router: shows Home if authenticated, or Landing Page if visitor
+// Root Router: shows Home if onboarded, Onboarding if not, or Landing Page if visitor
 function RootRoute() {
   const { user } = useAuth();
-  return user ? <Home /> : <LandingPage />;
+  const { profile, profileLoading } = useApp();
+
+  if (!user) {
+    return <LandingPage />;
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="loading-state" style={{ minHeight: '100vh', justifyContent: 'center' }}>
+        <div className="loading-spinner"></div>
+        <p className="loading-state-text">Loading NexGuide AI workspace...</p>
+      </div>
+    );
+  }
+
+  if (!profile?.onboardingComplete) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <Home />;
 }
 
-// Protected Route Component
+// Protected Route Component: requires auth AND completed onboarding
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
+  const { profile, profileLoading } = useApp();
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
+  if (profileLoading) {
+    return (
+      <div className="loading-state" style={{ minHeight: '100vh', justifyContent: 'center' }}>
+        <div className="loading-spinner"></div>
+        <p className="loading-state-text">Loading NexGuide AI...</p>
+      </div>
+    );
+  }
+
+  if (!profile?.onboardingComplete) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return children;
 }
 
-// Public-only Route Component (redirect to home if already logged in)
+// Dedicated Onboarding Route: requires auth, accessible before onboarding completes
+function OnboardingRoute() {
+  const { user } = useAuth();
+  const { profileLoading } = useApp();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (profileLoading) {
+    return (
+      <div className="loading-state" style={{ minHeight: '100vh', justifyContent: 'center' }}>
+        <div className="loading-spinner"></div>
+        <p className="loading-state-text">Preparing Onboarding...</p>
+      </div>
+    );
+  }
+
+  return <Onboarding />;
+}
+
+// Public-only Route Component (redirect to home/onboarding if already logged in)
 function PublicRoute({ children }) {
   const { user } = useAuth();
+  const { profile, profileLoading } = useApp();
+
   if (user) {
+    if (profileLoading) {
+      return (
+        <div className="loading-state" style={{ minHeight: '100vh', justifyContent: 'center' }}>
+          <div className="loading-spinner"></div>
+          <p className="loading-state-text">Loading NexGuide AI...</p>
+        </div>
+      );
+    }
+    if (!profile?.onboardingComplete) {
+      return <Navigate to="/onboarding" replace />;
+    }
     return <Navigate to="/" replace />;
   }
+
   return children;
 }
 
@@ -62,8 +132,8 @@ export default function App() {
             <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             
-            {/* Onboarding */}
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            {/* Onboarding Flow */}
+            <Route path="/onboarding" element={<OnboardingRoute />} />
 
             {/* Main Application Protected Routes */}
             <Route path="/roadmap" element={<ProtectedRoute><Roadmap /></ProtectedRoute>} />

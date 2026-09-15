@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import AuthLayout from '../../components/auth/AuthLayout.jsx';
+import { dataService } from '../../services/dataService.js';
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,7 +21,12 @@ export default function Login() {
     const result = await login(email, password);
     setLoading(false);
     if (result.success) {
-      navigate('/');
+      const studentProfile = await dataService.getStudentProfile(result.user.userId);
+      if (studentProfile?.onboardingComplete) {
+        navigate('/');
+      } else {
+        navigate('/onboarding');
+      }
     } else {
       setError(result.error || 'Unable to sign in. Please verify your credentials.');
     }
@@ -74,6 +80,10 @@ export default function Login() {
             onChange={e => setEmail(e.target.value)}
             required
             autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+            inputMode="email"
             autoFocus
           />
         </div>
@@ -85,7 +95,7 @@ export default function Login() {
             </label>
             <Link
               to="/forgot-password"
-              style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 600 }}
+              style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 600, padding: '4px 0' }}
             >
               Forgot password?
             </Link>
@@ -100,14 +110,17 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              style={{ paddingRight: 44 }}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+              style={{ paddingRight: 48 }}
             />
             <button
               type="button"
               onClick={() => setShowPw(p => !p)}
               style={{
                 position: 'absolute',
-                right: 12,
+                right: 2,
                 top: '50%',
                 transform: 'translateY(-50%)',
                 background: 'none',
@@ -116,10 +129,14 @@ export default function Login() {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: 44,
+                minHeight: 44,
+                touchAction: 'manipulation',
               }}
               aria-label={showPw ? 'Hide password' : 'Show password'}
             >
-              {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </div>
@@ -127,11 +144,11 @@ export default function Login() {
         <button
           type="submit"
           className="btn btn-primary btn-lg"
-          style={{ width: '100%', justifyContent: 'center', height: 46, marginTop: 'var(--space-5)' }}
+          style={{ width: '100%', justifyContent: 'center', minHeight: 48, fontSize: '15px', marginTop: 'var(--space-5)' }}
           disabled={loading}
           id="login-submit-btn"
         >
-          {loading ? 'Signing In...' : <>Sign In to Workspace <ArrowRight size={15} /></>}
+          {loading ? 'Signing In...' : <>Sign In to Workspace <ArrowRight size={16} /></>}
         </button>
       </form>
     </AuthLayout>

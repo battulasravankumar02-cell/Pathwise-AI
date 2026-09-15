@@ -568,3 +568,288 @@ function matchesAny(text, keywords) {
   return keywords.some(kw => text.includes(kw));
 }
 
+// ============================================================
+// SOFTWARE CAREER INTELLIGENCE & ROLE ANALYSIS ENGINES
+// ============================================================
+
+export const TECH_ROLE_DEFINITIONS = {
+  'Software Engineer': {
+    title: 'Software Engineer',
+    category: 'Core Engineering',
+    coreSkills: ['Python', 'Java', 'C++', 'DSA', 'OOP', 'Git', 'SQL', 'System Design'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'Software Engineering'],
+    preferredInterests: ['Software Engineering & Architecture', 'Distributed Systems & Backend', 'Web Development'],
+    demand: 'VERY HIGH',
+    demandLabel: 'High Volume Hiring Globally',
+    typicalSalaryRange: '€60k–€90k (EU) / $95k–$150k (US) / ₹8–24 LPA (IN)',
+    difficulty: 'Challenging',
+  },
+  'Full Stack Developer': {
+    title: 'Full Stack Developer',
+    category: 'Web & Applications',
+    coreSkills: ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Express', 'SQL', 'PostgreSQL', 'HTML/CSS', 'Git', 'REST APIs'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'BCA', 'MCA', 'Software Engineering'],
+    preferredInterests: ['Full Stack Web Development', 'Web Development', 'UI/UX Engineering'],
+    demand: 'VERY HIGH',
+    demandLabel: 'Top Recruiter Search in Tech',
+    typicalSalaryRange: '€55k–€85k (EU) / $90k–$140k (US) / ₹7–22 LPA (IN)',
+    difficulty: 'Moderate',
+  },
+  'Frontend Engineer': {
+    title: 'Frontend Engineer',
+    category: 'Client-Side Engineering',
+    coreSkills: ['JavaScript', 'TypeScript', 'React', 'Next.js', 'HTML/CSS', 'Tailwind', 'Git', 'Web Performance'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'BCA', 'MCA'],
+    preferredInterests: ['Full Stack Web Development', 'UI/UX Engineering', 'Web Development'],
+    demand: 'HIGH',
+    demandLabel: 'Strong Product Demand',
+    typicalSalaryRange: '€50k–€80k (EU) / $85k–$135k (US) / ₹6–20 LPA (IN)',
+    difficulty: 'Moderate',
+  },
+  'Backend Engineer': {
+    title: 'Backend Engineer',
+    category: 'Server-Side & Architecture',
+    coreSkills: ['Python', 'Java', 'FastAPI', 'Node.js', 'PostgreSQL', 'Docker', 'REST APIs', 'System Design', 'Redis', 'SQL'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'Software Engineering'],
+    preferredInterests: ['Distributed Systems & Backend', 'Software Engineering & Architecture', 'Cloud Infrastructure & DevOps'],
+    demand: 'VERY HIGH',
+    demandLabel: 'Critical Infrastructure Hiring',
+    typicalSalaryRange: '€60k–€95k (EU) / $100k–$155k (US) / ₹9–26 LPA (IN)',
+    difficulty: 'Challenging',
+  },
+  'AI / Machine Learning Engineer': {
+    title: 'AI / Machine Learning Engineer',
+    category: 'Artificial Intelligence',
+    coreSkills: ['Python', 'PyTorch', 'TensorFlow', 'Scikit-Learn', 'Math & Statistics', 'MLOps', 'FastAPI', 'Pandas', 'NumPy'],
+    preferredBranches: ['Artificial Intelligence & Data Science', 'Computer Science & Engineering', 'Data Science & Analytics'],
+    preferredInterests: ['Artificial Intelligence & Machine Learning', 'Data Engineering & Big Data'],
+    demand: 'VERY HIGH',
+    demandLabel: 'Highest Growth Tech Domain',
+    typicalSalaryRange: '€65k–€105k (EU) / $110k–$175k (US) / ₹10–32 LPA (IN)',
+    difficulty: 'Advanced',
+  },
+  'Data Scientist': {
+    title: 'Data Scientist',
+    category: 'Data & Analytics',
+    coreSkills: ['Python', 'Pandas', 'NumPy', 'SQL', 'Statistics', 'Scikit-Learn', 'Data Visualization', 'A/B Testing'],
+    preferredBranches: ['Artificial Intelligence & Data Science', 'Data Science & Analytics', 'Computer Science & Engineering'],
+    preferredInterests: ['Artificial Intelligence & Machine Learning', 'Data Engineering & Big Data'],
+    demand: 'HIGH',
+    demandLabel: 'Steady Strategic Demand',
+    typicalSalaryRange: '€58k–€90k (EU) / $95k–$150k (US) / ₹8–25 LPA (IN)',
+    difficulty: 'Challenging',
+  },
+  'Data Engineer': {
+    title: 'Data Engineer',
+    category: 'Data Infrastructure',
+    coreSkills: ['SQL', 'Python', 'Apache Spark', 'Airflow', 'Data Warehousing', 'AWS', 'Docker', 'PostgreSQL'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'Data Science & Analytics'],
+    preferredInterests: ['Data Engineering & Big Data', 'Cloud Infrastructure & DevOps'],
+    demand: 'VERY HIGH',
+    demandLabel: 'Massive Global Shortage',
+    typicalSalaryRange: '€62k–€95k (EU) / $105k–$160k (US) / ₹9–28 LPA (IN)',
+    difficulty: 'Challenging',
+  },
+  'DevOps & Cloud Engineer': {
+    title: 'DevOps & Cloud Engineer',
+    category: 'Infrastructure & Reliability',
+    coreSkills: ['Linux', 'Docker', 'Kubernetes', 'AWS', 'CI/CD Pipelines', 'Terraform', 'Git', 'Python', 'Networking'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'Electronics & Communication'],
+    preferredInterests: ['Cloud Infrastructure & DevOps', 'Distributed Systems & Backend'],
+    demand: 'VERY HIGH',
+    demandLabel: 'Critical Enterprise Need',
+    typicalSalaryRange: '€62k–€100k (EU) / $105k–$165k (US) / ₹9–27 LPA (IN)',
+    difficulty: 'Challenging',
+  },
+  'Cybersecurity Analyst': {
+    title: 'Cybersecurity Analyst',
+    category: 'Security & Defense',
+    coreSkills: ['Networking', 'Linux', 'Security Fundamentals', 'Python', 'Penetration Testing', 'SIEM', 'Cryptography'],
+    preferredBranches: ['Cyber Security', 'Computer Science & Engineering', 'Information Technology'],
+    preferredInterests: ['Cybersecurity & Threat Defense', 'Cloud Infrastructure & DevOps'],
+    demand: 'VERY HIGH',
+    demandLabel: 'Zero Unemployment Rate',
+    typicalSalaryRange: '€58k–€92k (EU) / $95k–$150k (US) / ₹8–24 LPA (IN)',
+    difficulty: 'Challenging',
+  },
+  'Mobile App Developer': {
+    title: 'Mobile App Developer',
+    category: 'Mobile & Client',
+    coreSkills: ['React Native / Flutter', 'JavaScript', 'TypeScript', 'Mobile UI/UX', 'REST APIs', 'Git', 'Kotlin / Swift'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'BCA', 'MCA'],
+    preferredInterests: ['Mobile Application Development (iOS/Android)', 'Full Stack Web Development'],
+    demand: 'HIGH',
+    demandLabel: 'Consumer & FinTech Demand',
+    typicalSalaryRange: '€52k–€85k (EU) / $90k–$140k (US) / ₹7–22 LPA (IN)',
+    difficulty: 'Moderate',
+  },
+  'QA / Test Automation Engineer': {
+    title: 'QA / Test Automation Engineer',
+    category: 'Quality & Testing',
+    coreSkills: ['Python / Java', 'Selenium / Playwright', 'API Testing', 'Test Frameworks', 'CI/CD', 'Git', 'SQL'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology', 'BCA', 'MCA', 'Diploma'],
+    preferredInterests: ['QA Automation & Systems Testing', 'Software Engineering & Architecture'],
+    demand: 'HIGH',
+    demandLabel: 'Standard in Product Engineering',
+    typicalSalaryRange: '€48k–€75k (EU) / $80k–$125k (US) / ₹5–16 LPA (IN)',
+    difficulty: 'Moderate',
+  },
+};
+
+/**
+ * Analyze user's profile against a selected software career role
+ * @param {object} profile - Academic details
+ * @param {string} roleName - Selected job role
+ * @param {string[]} userSkills - Skills identified by user
+ * @param {string} experienceLevel - 'Beginner' | 'Intermediate' | 'Advanced'
+ * @returns {object} Analysis with match percentage, strengths, gaps, and strategic advice
+ */
+export function analyzeProfileAgainstRole(profile = {}, roleName = 'Software Engineer', userSkills = [], experienceLevel = 'Intermediate') {
+  const role = TECH_ROLE_DEFINITIONS[roleName] || {
+    title: roleName,
+    coreSkills: ['Programming Fundamentals', 'Data Structures', 'Database Systems', 'Git', 'System Architecture'],
+    preferredBranches: ['Computer Science & Engineering', 'Information Technology'],
+    preferredInterests: ['Software Engineering & Architecture'],
+    demand: 'HIGH',
+    typicalSalaryRange: 'Competitive Industry Standards',
+  };
+
+  const cleanUserSkills = (userSkills || []).map(s => s.trim().toLowerCase());
+  
+  // Identify strengths (matching skills)
+  const strengths = role.coreSkills.filter(req => {
+    const rLower = req.toLowerCase();
+    return cleanUserSkills.some(us => us.includes(rLower) || rLower.includes(us));
+  });
+
+  // Identify gaps (skills needed for production readiness)
+  const gaps = role.coreSkills.filter(req => !strengths.includes(req));
+
+  // Compute skill match score
+  const skillRatio = strengths.length / Math.max(1, role.coreSkills.length);
+  let baseScore = Math.round(skillRatio * 55) + 30; // 30-85 range
+
+  // Bonus for relevant degree / branch
+  const branchLower = (profile?.stream || profile?.branch || '').toLowerCase();
+  const degreeLower = (profile?.course || profile?.degree || '').toLowerCase();
+  
+  const isBranchSynergy = role.preferredBranches.some(pb => branchLower.includes(pb.toLowerCase()));
+  if (isBranchSynergy) baseScore += 10;
+
+  if (degreeLower.includes('b.tech') || degreeLower.includes('m.tech') || degreeLower.includes('mca')) {
+    baseScore += 5;
+  }
+
+  if (experienceLevel === 'Advanced') baseScore += 5;
+  else if (experienceLevel === 'Beginner') baseScore -= 5;
+
+  const matchPercentage = Math.min(95, Math.max(45, baseScore));
+
+  let readinessLevel = 'Foundation Stage';
+  if (matchPercentage >= 78) readinessLevel = 'High Alignment — Accelerated Track';
+  else if (matchPercentage >= 60) readinessLevel = 'Solid Foundation — Bridging Gaps';
+  else readinessLevel = 'Structured Transformation Required';
+
+  const degreeText = profile?.course ? `${profile.course} in ${profile.stream || 'Tech'}` : 'your academic stage';
+  const academicAlignment = isBranchSynergy
+    ? `${degreeText} provides formal engineering accreditation and coursework synergy recognized by hiring managers.`
+    : `${degreeText} provides quantitative and problem-solving analytical rigor transferable to ${role.title}.`;
+
+  const aiTakeaway = strengths.length > 0
+    ? `Your existing capabilities in ${strengths.slice(0, 3).join(', ')} give you immediate traction. The roadmap prioritizes mastering ${gaps.slice(0, 3).join(', ')} to bridge industry requirements.`
+    : `Starting fresh with ${role.title} gives you an organized clean slate. Stage 1 will anchor foundational syntax before moving into production systems.`;
+
+  return {
+    role: role.title,
+    matchPercentage,
+    readinessLevel,
+    strengths: strengths.length > 0 ? strengths : ['Strong Academic Foundation', 'Fast Learner Aptitude'],
+    gaps: gaps.slice(0, 5),
+    academicAlignment,
+    aiTakeaway,
+    demand: role.demand,
+    typicalSalary: role.typicalSalaryRange,
+  };
+}
+
+/**
+ * AI Recommendation Engine: Recommends software roles based on academic background, skills, and interests
+ * Strictly SOFTWARE & TECHNOLOGY roles only!
+ * @param {object} profile - Academic details (course, stream, year)
+ * @param {string[]} skills - Technical skills
+ * @param {string[]} interests - Technology interests
+ * @param {string} experienceLevel - 'Beginner' | 'Intermediate' | 'Advanced'
+ * @returns {Array<object>} Ranked software roles with priority scores and personalized rationales
+ */
+export function recommendSoftwareRoles(profile = {}, skills = [], interests = [], experienceLevel = 'Intermediate') {
+  const cleanSkills = (skills || []).map(s => s.toLowerCase());
+  const cleanInterests = (interests || []).map(i => i.toLowerCase());
+  const branch = (profile?.stream || profile?.branch || '').toLowerCase();
+  const degree = (profile?.course || profile?.degree || '').toLowerCase();
+
+  const scoredRoles = Object.entries(TECH_ROLE_DEFINITIONS).map(([roleKey, def]) => {
+    // 1. Skill overlap score (0 - 45 points)
+    const matchingSkills = def.coreSkills.filter(req => {
+      const rLower = req.toLowerCase();
+      return cleanSkills.some(us => us.includes(rLower) || rLower.includes(us));
+    });
+    const skillsToAcquire = def.coreSkills.filter(req => !matchingSkills.includes(req));
+    const skillScore = (matchingSkills.length / def.coreSkills.length) * 45;
+
+    // 2. Interest alignment score (0 - 35 points)
+    const interestMatches = def.preferredInterests.filter(pi => {
+      const piLower = pi.toLowerCase();
+      return cleanInterests.some(ci => ci.includes(piLower) || piLower.includes(ci));
+    });
+    const interestScore = interestMatches.length > 0 ? 35 : 15;
+
+    // 3. Branch & Degree synergy (0 - 20 points)
+    const branchSynergy = def.preferredBranches.some(pb => branch.includes(pb.toLowerCase()));
+    let degreeScore = branchSynergy ? 20 : 10;
+    if (degree.includes('b.tech') || degree.includes('m.tech') || degree.includes('mca') || degree.includes('bca')) {
+      degreeScore += 3;
+    }
+
+    // Total raw priority score normalized to 65 - 98%
+    const rawScore = skillScore + interestScore + degreeScore;
+    const priorityScore = Math.min(98, Math.max(68, Math.round(55 + (rawScore * 0.45))));
+
+    let priorityCategory = 'Recommended Fit';
+    if (priorityScore >= 88) priorityCategory = 'Top Recommended Fit';
+    else if (priorityScore >= 78) priorityCategory = 'High Synergy';
+    else priorityCategory = 'High Growth Pathway';
+
+    // Tailored rationale citing user's exact profile
+    let reason = '';
+    const degreeLabel = profile?.course || 'Engineering';
+    const branchLabel = profile?.stream ? `(${profile.stream})` : '';
+
+    if (matchingSkills.length > 0 && interestMatches.length > 0) {
+      reason = `Direct match with your ${interestMatches[0]} interest and validated skills in ${matchingSkills.slice(0, 2).join(', ')}. Strong synergy with ${degreeLabel} ${branchLabel}.`;
+    } else if (matchingSkills.length > 0) {
+      reason = `Your proficiency in ${matchingSkills.slice(0, 2).join(', ')} accelerates your progression into ${def.title}. High demand across modern tech organizations.`;
+    } else if (interestMatches.length > 0) {
+      reason = `Aligns directly with your interest in ${interestMatches[0]}. ${degreeLabel} candidates transition smoothly into this track with structured milestone targets.`;
+    } else {
+      reason = `High-demand software pathway offering exceptional long-term compensation and career mobility for ${degreeLabel} graduates.`;
+    }
+
+    return {
+      role: def.title,
+      priorityScore,
+      priorityCategory,
+      reason,
+      matchingSkills: matchingSkills.length > 0 ? matchingSkills : ['Core Tech Aptitude'],
+      skillsToAcquire: skillsToAcquire.slice(0, 4),
+      demand: def.demand,
+      demandLabel: def.demandLabel,
+      typicalSalary: def.typicalSalaryRange,
+      difficulty: def.difficulty,
+    };
+  });
+
+  // Sort descending by priority score
+  return scoredRoles.sort((a, b) => b.priorityScore - a.priorityScore).slice(0, 4);
+}
+
+
